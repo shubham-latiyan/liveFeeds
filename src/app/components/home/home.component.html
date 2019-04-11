@@ -1,0 +1,62 @@
+<div style="margin: 20px">
+  <div class="row">
+    <div style="background-color:aqua" class="col-sm-4">
+      Live News
+      <div *ngFor="let data of newsArray;let i=index" class="alert alert-success" role="alert">
+        {{data?.title}}
+      </div>
+    </div>
+
+    <div style="background-color:rgb(202, 202, 122)" class="col-sm-4">
+      Live tweets
+      <div *ngFor="let loop of tweetsArray;let i=index" class="alert alert-success" role="alert">
+        {{loop?.text}}
+      </div>
+    </div>
+
+    <!-- <div style="background-color:rgb(85, 226, 85); border-left: 1px solid black" class="col-sm-4">
+      Upcoming Matches
+      <ng-container *ngIf="!detailScore">
+        <div *ngFor="let loop of newMatches;let i=index" class="alert alert-success" role="alert">
+          <div (click)="getLiveScore(loop?.unique_id)" class="custom">
+            {{loop['team-1']}} VS
+            {{loop['team-2']}}
+            {{loop?.type}}
+          </div>
+        </div>
+      </ng-container>
+      <ng-container *ngIf="detailScore">
+        <div *ngFor="let loop of scoreArray">
+          {{ loop }}
+        </div>
+      </ng-container>
+
+    </div> -->
+
+
+
+
+    <div style="background-color:rgb(149, 168, 149); border-left: 1px solid black" class="col-sm-4">
+      Upcoming Matches
+      <!-- <ng-container *ngIf="!detailScore"> -->
+      <div *ngFor="let loop of scoreArray;let i=index" class="alert alert-success" role="alert">
+        {{ loop.score.detail.batting.name  }}
+        {{ loop.score.detail.batting.score }}/{{ loop.score.detail.batting.wickets }} vs
+        {{ loop.score.detail.bowling.name  }}
+        {{ loop.score.detail.bowling.score }}/{{ loop.score.detail.bowling.wickets }}
+        <!-- </div> -->
+      </div>
+      <ng-container *ngIf="detailScore">
+        <div *ngFor="let loop of scoreArray">
+          {{ loop }}
+        </div>
+      </ng-container>
+
+    </div>
+
+
+
+
+
+  </div>
+</div>
