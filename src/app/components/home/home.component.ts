@@ -52,30 +52,15 @@ export class HomeComponent implements OnInit {
         setTimeout(() => {
           this.tweetsArray = [];
           this.stream.start()
-        }, 6000);
+        }, 10000);
       }
-      // console.log('this.tweetsArray:', this.tweetsArray)
     })
   }
   async getNewMatches(){
     let res = await this._ds.getRecentMatches();
-    this.scoreArray = res; 
-    console.log('this.scoreArray:', this.scoreArray)
-    // this._ds.getCricketScores().subscribe((data: any)=>{
-    //   console.log('data:', data)
-    //   this.newMatches = data.matches;
-    //   // console.log('this.newMatches:', this.newMatches)
-
-    // })
+    console.log('res:', res)
+    // this.scoreArray = res; 
+    // console.log('this.scoreArray:', this.scoreArray)
   }
-  // getLiveScore(id){
-  //   this._ds.getliveScore(id).subscribe((data: any)=>{
-  //     console.log('data:', data)
-  //     this.scoreArray = data.description.split('* v ')
-  //     this.detailScore = true;
-  //     console.log('score:', this.scoreArray)
-
-  //   })
-  // }
 
 }

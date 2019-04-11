@@ -2,9 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 const rp = require('request-promise');
 const cheerio = require('cheerio');
-const getLiveScore = require('./live_score');
-// var Twit = require('twit')
-
+const getRecentMatches = require('./live_score');
 
 @Injectable({
   providedIn: 'root'
@@ -23,41 +21,11 @@ export class DataService {
   getCricketScores() {
     return this.http.get(`https://cricapi.com/api/matches?apikey=${this.cricketApiKey}`)
   }
-  // getliveScore(id) {
-  //   return this.http.get(`https://cricapi.com/api/cricketScore?apikey=${this.cricketApiKey}&unique_id=${id}`)
-  // }
 
-
-
-  getRecentMatches = () => {
-    return rp.get('http://www.cricbuzz.com')
-      .then(cricbuzzHome => {
-        const home = cheerio.load(cricbuzzHome);
-        return this.getLiveMatchesId(home);
-      })
-      .then(liveMatchIds => {
-        if (liveMatchIds.length) {
-          const promises = []
-          liveMatchIds.forEach(matchId => {
-            console.log('matchId:', matchId)
-            promises.push(getLiveScore(matchId));
-          });
-          return Promise.all(promises);
-        }
-        return [];
-      });
+  getRecentMatches(){
+    getRecentMatches()
   }
 
-  getLiveMatchesId = ($) => {
-    const rawHtml = $('#hm-scag-mtch-blk').children()[0].children[0];
-    console.log('rawHtml:', rawHtml)
-    const links = [];
-    rawHtml.children.forEach(matchObj => {
-      const link = matchObj.children[0].attribs.href;
-      const linkArray = link.split('/');
-      links.push(linkArray[2]);
-    });
-    return links;
-  }
+  
   
 }

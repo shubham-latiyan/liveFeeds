@@ -1,47 +1,55 @@
 const rp = require('request-promise');
 const _ = require('lodash')
+const cheerio = require('cheerio');
+
+const getRecentMatches = () => {
+    return rp.get('http://www.cricbuzz.com')
+      .then(cricbuzzHome => {
+        const home = cheerio.load(cricbuzzHome);
+        return getLiveMatchesId(home);
+      })
+      .then(liveMatchIds => {
+        if (liveMatchIds.length) {
+          const promises = []
+          liveMatchIds.forEach(matchId => {
+            console.log('matchId:', matchId)
+            promises.push(getLiveScore(matchId));
+          });
+          return Promise.all(promises);
+        }
+        return [];
+      });
+  }
+
+  const getLiveMatchesId = ($) => {
+    const rawHtml = $('#hm-scag-mtch-blk').children()[0].children[0];
+    console.log('rawHtml:', rawHtml)
+    const links = [];
+    rawHtml.children.forEach(matchObj => {
+      const link = matchObj.children[0].attribs.href;
+      const linkArray = link.split('/');
+      links.push(linkArray[2]);
+    });
+    return links;
+  }
+
+
 
 const getLiveScore = (id) => {
     try {
         return rp.get(`https://www.cricbuzz.com/match-api/${id}/commentary.json`)
             .then(matchJSON => {
                 matchJSON = JSON.parse(matchJSON);
-                // console.log('matchJSON:', matchJSON)
-
-                if (matchJSON.id) {
-                    
-                    const output: any = {
-                        id: matchJSON.id,
-                        type: matchJSON.type,
-                        series: matchJSON.series.name,
-                        status: matchJSON.status,
-                        state: matchJSON.state,
-                        startTime: matchJSON.start_time,
-                        venue: { name: matchJSON.venue.name, location: matchJSON.venue.location }
-                    };
-                    // console.log('output:', output)
-                    let teams = {}
-                    if (matchJSON.team1 && matchJSON.team2) {
-                        teams = getTeamInfo(matchJSON.team1, matchJSON.team2);
-                        output.teams = teams;
+                console.log('matchJSON:', matchJSON)
+                if(matchJSON.id != 0 || matchJSON.id != null ||matchJSON.id != undefined){
+                    let output:any = {
+                        team1: matchJSON.team1.name,
+                        team2: matchJSON.team2.name,
+                        start_time: matchJSON.start_time = matchJSON.start_time + '000',
+                        scoreTeam1: matchJSON.score ? (matchJSON.score.batting ? matchJSON.score.batting.score : 'not played yet') : 'not played yet',
+                        scoreTeam2: matchJSON.score ? matchJSON.score.bowling ? matchJSON.score.bowling.score : 'not played yet': 'not played yet',
                     }
-
-                    if (output.state !== 'preview') {
-                        const players = matchJSON.players;
-                        const score: any = {};
-                        score.runRate = ((matchJSON || {}).score || {}).crr;
-                        score.target = ((matchJSON || {}).score || {}).target;
-                        score.detail = getScoreDetails((matchJSON || {}).score, teams);
-                        // if (output.state == 'inprogress') {
-                        //     score.partnership = ((matchJSON || {}).score || {}).prtshp;
-                        //     score.batsmen = getPlayerInfo(((matchJSON || {}).score || {}).batsman, players)
-                        //     score.bowlers = getPlayerInfo(((matchJSON || {}).score || {}).bowler, players)
-                        //     score.lastBallDetail = getLastBallDetail((matchJSON || {}).comm_lines, players, (((matchJSON || {}).score || {}).prev_overs || '').trim(), score.detail.batting.overs)
-                        // }
-                        output.score = score;
-                        output.teams = teams;
-                    }
-                    // console.log('output:', output)
+                    console.log('output:', output)
                     return output;
                 }
                 throw new Error('No match found');
@@ -51,83 +59,4 @@ const getLiveScore = (id) => {
     }
 }
 
-// const getLastBallDetail = (comm_lines, players, prevOvers, over) => {
-//     if (!over.includes(".")) {
-//         over = parseInt(over, 10);
-//         over = `${over - 1}.6`
-//     }
-//     const lassBallCommentaryDetails: any = _.find(comm_lines, {
-//         o_no: over
-//     });
-//     let lassBallDetail = {};
-//     if (lassBallCommentaryDetails) {
-//         lassBallDetail = {
-//             batsman: getPlayerInfo(lassBallCommentaryDetails.batsman, players),
-//             bowler: getPlayerInfo(lassBallCommentaryDetails.bowler, players),
-//             events: lassBallCommentaryDetails.all_evt,
-//             commentary: lassBallCommentaryDetails.comm,
-//             score: getLastBallStatus(prevOvers),
-//         };
-//     }
-//     return lassBallDetail;
-// }
-
-// const getLastBallStatus = (prevOvers) => {
-//     const ballArray = (prevOvers || "").split(' ');
-//     const lastBall = ballArray.length ? ballArray[ballArray.length - 1] === '|' ? ballArray[ballArray.length - 2] || null : ballArray[ballArray.length - 1] : "-";
-//     return lastBall === '.' ? 0 : lastBall;
-// }
-
-// const getPlayerInfo = (playerArray, players) => {
-//     return playerArray.map(player => {
-//         const playerDetail: any = getPlayerObj(player.id, players);
-//         player.name = playerDetail.f_name;
-//         player.shortName = playerDetail.name;
-//         return player;
-//     });
-// }
-
-// const getPlayerObj = (id, players) => {
-//     return _.find(players, { id });
-// }
-
-const getTeamInfo = (team1, team2) => {
-    const teams = {};
-    const assignTeamToObject = (team) => {
-        teams[team.id] = {
-            name: team.name,
-            shortName: team.s_name,
-            flag: `https://www.cricbuzz.com/i/stats/flags/web/official_flags/team_${team.id || 1}.png`
-        }
-    }
-    assignTeamToObject(team1);
-    assignTeamToObject(team2);
-    return teams;
-}
-
-const getScoreDetails = (score, teams) => {
-    const scoreDetail: any = {
-        currentInnings: 1
-    }
-
-    const getInningsDetail = (innings) => {
-        const inningsDetail = teams[innings.id];
-        const inningsInfo = innings.innings[0];
-        inningsDetail.score = inningsInfo.score;
-        inningsDetail.overs = inningsInfo.overs;
-        inningsDetail.wickets = inningsInfo.wkts;
-        return inningsDetail;
-    }
-
-    scoreDetail.batting = getInningsDetail(score.batting);
-
-    if (score.bowling) {
-        scoreDetail.currentInnings = 2;
-        scoreDetail.bowling = getInningsDetail(score.bowling);
-    }
-
-    return scoreDetail;
-}
-
-
-module.exports = getLiveScore;
+module.exports = getRecentMatches;
