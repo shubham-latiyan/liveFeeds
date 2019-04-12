@@ -1,29 +1,44 @@
 <div style="margin: 20px">
   <div class="row">
-    <div style="background-color:aqua" class="col-sm-4">
-      Live News
+    <div style="background-color:rgb(111, 216, 216)" class="col-sm-4">
+      <span class="main">Live News</span>
       <div *ngFor="let data of newsArray;let i=index" class="alert alert-success" role="alert">
         {{data?.title}}
       </div>
     </div>
 
-    <div style="background-color:rgb(202, 202, 122)" class="col-sm-4">
-      Live tweets
+    <div style="background-color:rgb(202, 202, 122); border-left: 1px solid black" class="col-sm-4">
+      <span class="main">Live tweets</span>
       <div *ngFor="let loop of tweetsArray;let i=index" class="alert alert-success" role="alert">
         {{loop?.text}}
       </div>
     </div>
 
     <div style="background-color:rgb(149, 168, 149); border-left: 1px solid black" class="col-sm-4">
-      Cricket Matches
+      <span class="main">Cricket Matches</span>
       <div *ngFor="let loop of scoreArray;let i=index" class="alert alert-success" role="alert">
+        <div *ngIf="loop?.state == 'inprogress'">
+          <span style="background-color:rgb(236, 48, 48)">Live</span>
+        </div>
         <b> {{ loop?.team1 }} </b>
-        {{ loop?.scoreTeam1 }} vs
+        {{ loop?.scoreTeam1 }}
+        <div>
+          <b>VS</b>
+        </div>
         <div>
           <b> {{ loop?.team2  }} </b>
           {{ loop?.scoreTeam2 }}
+          <div>
+            {{ loop?.type }}
+          </div>
+          <div *ngIf="loop?.state == 'inprogress'">
+            {{ loop?.prev_overs }}
+          </div>
+          <div>
+            {{ loop?.status }}
+          </div>
         </div>
-        <div>
+        <div *ngIf="loop?.scoreTeam1 == '' && loop?.scoreTeam2 == ''">
           Starts At: {{ loop?.start_time | date: 'medium'}}
         </div>
       </div>

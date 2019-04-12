@@ -1,17 +1,16 @@
 const rp = require('request-promise');
-const _ = require('lodash')
 const cheerio = require('cheerio');
 
-const getRecentMatches = () => {
+const getLatestMatches = () => {
     return rp.get('http://www.cricbuzz.com')
       .then(cricbuzzHome => {
         const home = cheerio.load(cricbuzzHome);
-        return getLiveMatchesId(home);
+        return getMatchesIdByScraping(home);
       })
-      .then(liveMatchIds => {
-        if (liveMatchIds.length) {
+      .then(matchId => {
+        if (matchId.length) {
           const promises = []
-          liveMatchIds.forEach(matchId => {
+          matchId.forEach(matchId => {
             console.log('matchId:', matchId)
             promises.push(getLiveScore(matchId));
           });
@@ -21,9 +20,8 @@ const getRecentMatches = () => {
       });
   }
 
-  const getLiveMatchesId = ($) => {
+  const getMatchesIdByScraping = ($) => {
     const rawHtml = $('#hm-scag-mtch-blk').children()[0].children[0];
-    console.log('rawHtml:', rawHtml)
     const links = [];
     rawHtml.children.forEach(matchObj => {
       const link = matchObj.children[0].attribs.href;
@@ -33,30 +31,31 @@ const getRecentMatches = () => {
     return links;
   }
 
-
-
 const getLiveScore = (id) => {
     try {
-        return rp.get(`https://www.cricbuzz.com/match-api/${id}/commentary.json`)
+        return rp.get(`https://www.cricbuzz.com/match-api/${id}/commentary.json`)// found it on cricbuzz network calls
             .then(matchJSON => {
                 matchJSON = JSON.parse(matchJSON);
-                console.log('matchJSON:', matchJSON)
+                // console.log('matchJSON:', matchJSON)
                 if(matchJSON.id != 0 || matchJSON.id != null ||matchJSON.id != undefined){
-                    let output:any = {
+                    let resultObj:any = {
                         team1: matchJSON.team1.name,
                         team2: matchJSON.team2.name,
                         start_time: matchJSON.start_time = matchJSON.start_time + '000',
-                        scoreTeam1: matchJSON.score ? (matchJSON.score.batting ? matchJSON.score.batting.score : 'not played yet') : 'not played yet',
-                        scoreTeam2: matchJSON.score ? matchJSON.score.bowling ? matchJSON.score.bowling.score : 'not played yet': 'not played yet',
+                        prev_overs: matchJSON.score ? matchJSON.score.prev_overs: '',
+                        state: matchJSON.state,
+                        status: matchJSON.status,
+                        type: matchJSON.type,
+                        scoreTeam1: matchJSON.score ? (matchJSON.score.batting ? matchJSON.score.batting.score : '') : '',
+                        scoreTeam2: matchJSON.score ? matchJSON.score.bowling ? matchJSON.score.bowling.score : '': '',
                     }
-                    console.log('output:', output)
-                    return output;
+                    // console.log('resultObj:', resultObj)
+                    return resultObj;
                 }
-                throw new Error('No match found');
             });
     } catch (e) {
         throw e;
     }
 }
 
-module.exports = getRecentMatches;
+module.exports = getLatestMatches;

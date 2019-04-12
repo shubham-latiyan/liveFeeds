@@ -1,6 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { DataService } from '../../providers/data.service';
-import Twit from 'twit';
 
 @Component({
   selector: 'app-home',
@@ -8,14 +7,14 @@ import Twit from 'twit';
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit {
-  newsArray: Array<any>
-  tweetsArray: Array<any>
-  newMatches : Array<any>
-  scoreArray: Array<any>
+  newsArray: any = [];
+  tweetsArray: any = [];
+  newMatches: any = [];
+  scoreArray: any = [];
   T: any;
   stream: any;
   detailScore: Boolean = false;
-  scoresArray: Array<any>
+  scoresArray: any = [];
 
   constructor(private _ds: DataService, private _cdr: ChangeDetectorRef) { }
 
@@ -35,15 +34,8 @@ export class HomeComponent implements OnInit {
   }
 
   async getTweets() {
-    this.T = new Twit({
-      consumer_key: 'tCsV8cKxA1ksPofEAzDrxbsn5',
-      consumer_secret: 'I1dQMbkGfF5qXWwIREnfTDYoAfC5936dpggWfyjcK77XK37Jxw',
-      access_token: '604208423-d93coBQvRTccphVuW9GsKlh3FSv5sTvsk3UYgVKw',
-      access_token_secret: 'hG0J4xty5EYrsIvBuF40bX3jNKQ8CKuqO8yXHsFk6Iniu',
-      timeout_ms: 60 * 1000,
-      strictSSL: true,
-    })
-    this.stream = await this.T.stream('statuses/filter', { track: 'RafaleDeal' })
+    let config = await this._ds.getTweets()
+    this.stream = await config.stream('statuses/filter', { track: ['VoteForIndia', 'RafaleDeal', 'NaMoForNewIndia']})
     this.stream.on('tweet', (tweet) => {
       this.tweetsArray.unshift(tweet)
       this._cdr.detectChanges();
@@ -56,11 +48,12 @@ export class HomeComponent implements OnInit {
       }
     })
   }
-  async getNewMatches(){
-    let res = await this._ds.getRecentMatches();
-    console.log('res:', res)
-    // this.scoreArray = res; 
-    // console.log('this.scoreArray:', this.scoreArray)
+  async getNewMatches() {
+    setInterval(async () => {
+      let res = await this._ds.getRecentMatches();
+      this.scoreArray = res;
+      console.log('this.scoreArray:', this.scoreArray)
+    }, 4000);
   }
 
 }
