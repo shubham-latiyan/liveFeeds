@@ -20,7 +20,7 @@ export class HomeComponent implements OnInit {
 
   ngOnInit() {
     this.getNews();
-    // this.getTweets();
+    this.getTweets();
     this.getNewMatches();
   }
 
