@@ -46,7 +46,7 @@ export class HomeComponent implements OnInit {
 
   async getTweets() {
     let config = await this._ds.getTweets()
-    this.stream = await config.stream('statuses/filter', { track: ['VoteForIndia', 'RafaleDeal', 'NaMoForNewIndia'] })
+    this.stream = await config.stream('statuses/filter', { track: [ 'IndiaWantsModiAgain', 'OnlyyUbyShael', 'VoteForIndia', 'RafaleDeal', 'NaMoForNewIndia'] })
     this.stream.on('tweet', (tweet) => {
       this.tweetsArray.unshift(tweet)
       this._cdr.detectChanges();
