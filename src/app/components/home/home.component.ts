@@ -20,22 +20,33 @@ export class HomeComponent implements OnInit {
 
   ngOnInit() {
     this.getNews();
-    this.getTweets();
+    // this.getTweets();
     this.getNewMatches();
   }
 
   getNews() {
-    this._ds.getNews().subscribe((data: any) => {
+    this._ds.getNews('abc-news').subscribe((data: any) => {
       if (data.status = 'ok') {
         this.newsArray = data.articles
-        console.log('this.newsArray:', this.newsArray)
       }
     })
+    let sourceArray = ['abc-news', 'bbc-news', 'axios', 'bloomberg']
+    setInterval(() => {
+      for (let i = 0; i < sourceArray.length; i++) {
+        setTimeout(() => {
+          this._ds.getNews(sourceArray[i]).subscribe((data: any) => {
+            if (data.status = 'ok') {
+              this.newsArray = data.articles
+            }
+          })
+        }, 4000 * i)
+      }
+    }, 16000);
   }
 
   async getTweets() {
     let config = await this._ds.getTweets()
-    this.stream = await config.stream('statuses/filter', { track: ['VoteForIndia', 'RafaleDeal', 'NaMoForNewIndia']})
+    this.stream = await config.stream('statuses/filter', { track: ['VoteForIndia', 'RafaleDeal', 'NaMoForNewIndia'] })
     this.stream.on('tweet', (tweet) => {
       this.tweetsArray.unshift(tweet)
       this._cdr.detectChanges();

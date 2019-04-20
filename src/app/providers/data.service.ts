@@ -14,8 +14,9 @@ export class DataService {
 
   constructor(private http: HttpClient) { }
 
-  getNews() {
-    return this.http.get(`${this.newsbaseUrl}top-headlines?sources=bbc-news&apiKey=${this.newsApiKey}`)
+  getNews(source) {
+    return this.http.get(`${this.newsbaseUrl}top-headlines?sources=${source}&apiKey=${this.newsApiKey}`)
+      
   }
   
   async getTweets(){
