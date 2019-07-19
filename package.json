@@ -18,6 +18,7 @@
   "private": true,
   "scripts": {
     "bvp": "electron-builder --linux deb tar.xz",
+    "win": "electron-builder --windows nsis:x64",
     "postinstall": "npm run postinstall:electron && electron-builder install-app-deps",
     "postinstall:web": "node postinstall-web",
     "postinstall:electron": "node postinstall",
